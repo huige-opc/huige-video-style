@@ -95,13 +95,16 @@
       i.style.transform = `perspective(2200px) rotateY(${(-90 * Math.max(0, 1 - (e - .5) * 2)).toFixed(2)}deg)`; i.style.opacity = e >= .5 ? 1 : 0; },
     shutter: (o, i, p) => { const e = M.io(p); i.style.clipPath = `inset(${(50 * (1 - e)).toFixed(2)}% 0 ${(50 * (1 - e)).toFixed(2)}% 0)`; o.style.transform = `scale(${(1 - .06 * e).toFixed(4)})`; },
     blur: (o, i, p) => { o.style.opacity = (1 - p).toFixed(3); o.style.filter = `blur(${(16 * p).toFixed(1)}px)`; i.style.opacity = p.toFixed(3); i.style.filter = `blur(${(16 * (1 - p)).toFixed(1)}px)`; },
-    slide: (o, i, p) => { const e = M.io(p); o.style.transform = `translateX(${(W() * .35 * e).toFixed(1)}px) scale(${(1 - .15 * e).toFixed(4)})`; o.style.opacity = (1 - e).toFixed(3); i.style.transform = `translateX(${(-W() * (1 - e)).toFixed(1)}px)`; }
+    slide: (o, i, p) => { const e = M.io(p); o.style.transform = `translateX(${(W() * .35 * e).toFixed(1)}px) scale(${(1 - .15 * e).toFixed(4)})`; o.style.opacity = (1 - e).toFixed(3); i.style.transform = `translateX(${(-W() * (1 - e)).toFixed(1)}px)`; },
+    /* hard cut at the midpoint: no double exposure, no text ghosting */
+    cut: (o, i, p) => { const showNew = p >= .5; o.style.opacity = showNew ? '0' : '1'; i.style.opacity = showNew ? '1' : '0'; o.style.transform = ''; i.style.transform = ''; }
   };
   /* window shapes for the three scenes: c(x,y,d) circle · q(x,y,w,h,r) rounded */
   M.c = (x, y, d, s) => ({ x, y, w: d, h: d, r: d / 2, o: 1, s: s || 1.15 });
   M.q = (x, y, w, h, r, s) => ({ x, y, w, h, r: r ?? 28, o: 1, s: s || 1.15 });
   M.story = o => {
     const tr = o.tr || ['zoom', 'push'], keys = [], TRD = o.trd || .6;
+    C.storyTr = tr.slice(); C.storyTB = M.TB.map(x => x.slice());
     if (!o.noface && o.wins) o.wins.slice(1).forEach((L, k) => keys.push({ t: M.TB[k + 1][0] - .28, d: TRD, L }));
     M.setup({ over: o.over, overCover: o.overCover, bg: o.bg, noface: o.noface, win: o.wins ? o.wins[0] : undefined, keys, end: o.end, dur: o.dur, ring: o.ring, port: o.port, captions: M.caps(o.caps),
       build(L) { const s = {}; s.cam = M.box(L, 0, 0, { width: '1920px', height: '1080px', transformOrigin: '50% 50%' });

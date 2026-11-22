@@ -35,6 +35,7 @@ Never flatten all sections into one default bold font. Use the template's palett
 - Check the spoken timestamps and place: title at the phrase start, chips/cards at the noun they name, summary line at the conclusion.
 - Keep a visible element until the next idea; never leave a long empty stretch where a later element could have appeared.
 - Scene boundaries follow the spoken topic change (not a template's fixed 10 s grid); fade the previous topic's cards out 0.2–0.3 s before the cut, and never let a transition overlap a long window move.
+- Text-to-text scene changes use `tr: ['cut','cut']` with every presenter key at that boundary set to `d: 0`. Do not cross-fade text with `zoom`/`blur`; that leaves the previous second's frame showing through.
 - Ensure every planned element is inside the section's time range (a 3.8 s section cannot have clues at 8 s).
 
 ## 4 · Animation on the element itself

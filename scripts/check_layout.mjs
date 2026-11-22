@@ -145,11 +145,16 @@ const motion = await page.evaluate(() => {
   const animatedFast = fast.filter(s => typeof s.update === 'function').map(s => [s.t0, s.t1]);
   const keys = (window.EV && window.EV.huigeKeys) || [];
   const glideAtFast = keys.filter(k => k.d > 0 && fast.some(s => k.t < s.t1 && k.t + k.d > s.t0)).map(k => [k.t, k.d]);
-  return { fast: fast.length, animatedFast, glideAtFast };
+  const storyTr = (window.EV && window.EV.storyTr) || [];
+  const storyTB = (window.EV && window.EV.storyTB) || [];
+  const cutAt = storyTB.slice(1).map((x, i) => storyTr[i] === 'cut' ? x[0] : null).filter(v => v != null);
+  const glideAtCut = keys.filter(k => k.d > 0 && cutAt.some(t => k.t < t + .34 && k.t + k.d > t - .34)).map(k => [k.t, k.d]);
+  return { fast: fast.length, animatedFast, glideAtFast, glideAtCut };
 });
 let motionFails = 0;
 motion.animatedFast.forEach(([a, b]) => { motionFails++; console.log(`  FAIL fast-shot animation  ${a.toFixed(2)}–${b.toFixed(2)}s (${(b - a).toFixed(2)}s shot)`); });
 motion.glideAtFast.forEach(([t, d]) => { motionFails++; console.log(`  FAIL presenter glide inside fast cut  t=${t.toFixed(2)}s d=${d.toFixed(2)}s`); });
+motion.glideAtCut.forEach(([t, d]) => { motionFails++; console.log(`  FAIL presenter glide across a cut transition  t=${t.toFixed(2)}s d=${d.toFixed(2)}s`); });
 if (motionFails) { fails += motionFails; console.log(`\nMOTION FAIL  (${motionFails})`); }
 else console.log(`\nMOTION OK  (${motion.fast} fast shots, no in-frame animation, no window glide)`);
 await browser.close();
