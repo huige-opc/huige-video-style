@@ -12,10 +12,45 @@
 
 ![模板卡](docs/templates.jpg)
 
+## 效果预览
+
+### 实拍口播剪辑
+
+完整版前两段，带中英文字幕：
+
+<table>
+<tr>
+<td align="center"><img src="docs/gifs/Baseline_T159_10s.gif" width="400"><br><sub>T159 明暗快切 · 0–10s</sub></td>
+<td align="center"><img src="docs/gifs/Baseline_T04_4s.gif" width="400"><br><sub>T04 纸张 · 10–13.8s</sub></td>
+</tr>
+</table>
+
+### 概念模板
+
+5 秒无声片段，GIF 循环播放：
+
+<table>
+<tr>
+<td align="center"><img src="docs/gifs/T30_Blueprint.gif" width="400"><br><sub>T30 Blueprint · 蓝图风</sub></td>
+<td align="center"><img src="docs/gifs/T38_Neon.gif" width="400"><br><sub>T38 Neon Night · 霓虹夜</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/gifs/T36_Pixel.gif" width="400"><br><sub>T36 Pixel Game · 像素游戏</sub></td>
+<td align="center"><img src="docs/gifs/T139_Brush.gif" width="400"><br><sub>T139 Brush Repaint · 笔刷重绘</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/gifs/T158_Bento.gif" width="400"><br><sub>T158 Bento · 便当格</sub></td>
+<td align="center"><img src="docs/gifs/T159_FlashCut.gif" width="400"><br><sub>T159 Flash Cut · 快切</sub></td>
+</tr>
+</table>
+
+以上片段均由本技能渲染；完整成片不放进仓库，避免仓库过大。
+
 ---
 
 ## 目录
 
+- [效果预览](#效果预览)
 - [它是什么](#它是什么)
 - [两条产品线](#两条产品线)
 - [环境依赖](#环境依赖)

@@ -25,5 +25,6 @@ template/sample5/media
 template/sample5/media26
 # Keep the template cards and Huige pose sources in the independent repo.
 !docs/templates.jpg
+!docs/gifs/*.gif
 !references/samples/*.jpg
 !assets/huige-poses/*.png
