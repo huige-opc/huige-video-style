@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "core_version": "1.0.1",
+  "rvm_mobilenetv3": {
+    "url": "https://bj.bcebos.com/paddlehub/fastdeploy/rvm_mobilenetv3_fp32.onnx",
+    "sha256": "88d4531297118f595bf2fd60f6f566aec2e559393802d1f436c380f0cbbd2828",
+    "license": "GPL-3.0",
+    "bundled": false,
+    "install_policy": "Downloaded on first presenter-cutout use, verified by SHA-256 and stored in the user's cache; never include it in Core or template ZIPs."
+  },
+  "notes": [
+    "Pilot lock only; the current Studio Dockerfile is intentionally unchanged.",
+    "Production adoption requires a container rebuild approval."
+  ]
+}

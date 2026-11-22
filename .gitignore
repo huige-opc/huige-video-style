@@ -1,0 +1,22 @@
+**/node_modules/
+**/.venv/
+**/__pycache__/
+**/*.pyc
+media/
+sec/
+out/
+check/
+jobs/
+.trash/
+*.mp4
+*.mov
+*.wav
+*.log
+.DS_Store
+template/demo/media/
+template/sample5/media
+template/sample5/media26
+# Keep the template cards and Huige pose sources in the independent repo.
+!docs/templates.jpg
+!references/samples/*.jpg
+!assets/huige-poses/*.png

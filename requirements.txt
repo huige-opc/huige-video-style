@@ -1,0 +1,8 @@
+# HUIGE Video Style · 手动分镜 / 概念模板 / 抠像所需 Python 依赖
+# Python 3.10–3.13；不要用 3.14（numpy 2.0.2 没有对应轮子）
+numpy==2.0.2
+opencv-python-headless==4.12.0.88
+# 仅 T19 / T24 / T26 的人物抠像需要；模型在首次运行时单独下载，不随仓库分发
+onnxruntime==1.29.0
+# 字幕关键词提取可选；缺失时 captions.py 会自动降级
+jieba==0.42.1

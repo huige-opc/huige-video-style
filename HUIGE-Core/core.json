@@ -1,0 +1,19 @@
+{
+  "distribution": "public",
+  "engine_api": "legacy-1",
+  "includes": [
+    "Skill",
+    "Content Planner",
+    "Template Registry",
+    "Engine",
+    "Renderer",
+    "QA"
+  ],
+  "license": "MIT",
+  "name": "HUIGE Core",
+  "public_download": true,
+  "publication_status": "release-candidate-not-published",
+  "schema_version": 1,
+  "tier": "free",
+  "version": "1.0.1"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "huige-video-style",
+  "version": "1.0.1",
+  "description": "Huige Video Style: deterministic motion-graphics toolkit and Claude skill for bilingual talking-head videos",
+  "author": "huige-opc",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huige-opc/huige-video-style.git"
+  },
+  "homepage": "https://github.com/huige-opc/huige-video-style#readme",
+  "bugs": { "url": "https://github.com/huige-opc/huige-video-style/issues" },
+  "type": "module",
+  "scripts": { "example": "node scripts/render.mjs template/section/index.html --stills check --times 0.8,2.5,5" },
+  "dependencies": { "playwright": "^1.47.0" }
+}

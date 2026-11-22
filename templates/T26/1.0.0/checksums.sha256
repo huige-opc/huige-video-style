@@ -1,0 +1,13 @@
+9cd811c20bb6a176e0b752516e8b1d3d4fb96db42705027b4fd4d51285ba9962  templates/T26/1.0.0/DEPENDENCIES.md
+59e9998f10e4904d111964d2f0e2b3d0dba06a54f7f46cd52c945eb4520ab5e7  templates/T26/1.0.0/README.md
+c46f3b972ec8cab6e7d730896355290b96c04d4725d88893bcd5c02c7d4918e5  templates/T26/1.0.0/SKILL.md
+5a0948bdd92698db88af8b30c25fb47e4cf209e30c1045adcd63e556020f636a  templates/T26/1.0.0/TEMPLATE.md
+ee48694b83685ff8b1a05d2111c4f580df990535746189ff21fece8ae30750eb  templates/T26/1.0.0/assets/manifest.json
+a5736c5bbac83b15a90b11a13381b65e066e6a3d383729745e3a1dbe12c793c6  templates/T26/1.0.0/config/defaults.json
+bca04b92eb673f1b63b7cc9b648d123248800bea395606eacdf1ee9af48f2f76  templates/T26/1.0.0/config/skin.json
+f1692af6945ed35f4f5a909c37b4fb7e5299fd8490710190271ba1db175c14b1  templates/T26/1.0.0/runtime/auto-skin.js
+9acdcd0d4204c2133a7c570919be654a905ebe52be49f8a48f4397803415dd89  templates/T26/1.0.0/runtime/demo.js
+db302ac5e47e97c369789b2853c777cf2fe10e7d14fe3d9f0ef6a8cf1a1ac9c6  templates/T26/1.0.0/runtime/index.html
+c49adf5488a3c18f52d9e090bc6bba87784d20480281588ae5f401bd20b5ad02  templates/T26/1.0.0/runtime/lib.js
+bdd4fe304170e2d4e8179eb28fbe9ca635c928a75904c469a260531847235d63  templates/T26/1.0.0/runtime/scenes.js
+bc0ba6bc2cbb3609313c49fec3a2a996bc9641a392d5cf3cdaad05edd8f2482f  templates/T26/1.0.0/template.json
