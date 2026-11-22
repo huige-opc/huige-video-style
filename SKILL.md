@@ -52,6 +52,7 @@ When the user names templates, use exactly those for those parts. When they don'
 - Reveal every element at the spoken word/cue from the SRT/ASR; never batch-reveal early or leave a planned element outside the section's time range.
 - Give each element a real entrance. Idle motion only when it carries information: scan line, light sweep, path draw, counter, camera push, or a glow pulse tied to a spoken beat. **No cheap motion (2026-11-23):** no whole-card bobbing, breathing, shaking, jitter or random float just to look animated. Static is better than decorative motion. Minimal templates stay restrained. Accepted motion reference: `projects/20261122_HUIGE风格基线/out/FULL117_CN-EN.mp4`.
 - **Impact floor:** every 3–5 s there must be a visual event — hard cut, full-bleed colour change, big type move, camera push, or a new content group. Never hold one static card for more than about 2 s; a long line needs cuts, reveals or a layout change.
+- **Fast-cut rule:** a shot under ~1.2 s is a cut frame — the cut is the motion. Elements appear already composed; no in-frame entrance, idle motion or window glide. 1.2–2.5 s allows one short entrance; only 2.5 s+ shots may reveal multiple elements or move the presenter window.
 - Auxiliary elements are content-related (arrows, book stairs, mic/film icons, stamps, comparison labels), never random decoration.
 - Read `references/typography-and-reveal.md` before building; the accepted 117.7 s master lives in `projects/20261122_HUIGE风格基线/`.
 
@@ -135,6 +136,6 @@ For a quick rough draft, the bundled `HUIGE-Core/` can run the Registry-driven p
 
 - The frame count of the final equals the source video's frame count. Section boundaries must be frame-exact.
 - The whole video decodes without errors, and loudness is about -16 LUFS.
-- Run `scripts/check_layout.mjs` on every section at 2–3 spoken-cue times; it must print `LAYOUT OK` (no text-on-text, text-on-card, text-over-presenter or off-frame text). Empty-zone WARNs are reviewed by eye.
+- Run `scripts/check_layout.mjs` on every section at 2–3 spoken-cue times; it must print `LAYOUT OK` and `MOTION OK`. Layout checks text-on-text, text-on-card, text-over-presenter and off-frame text. Motion checks reject any shot under 1.2 s that still has an in-frame `update` animation or a presenter-window glide. Empty-zone WARNs are reviewed by eye.
 - On a contact sheet (`scripts/contact_sheet.sh`), no text sits under the Huige window, nothing is cut off at the frame edge, captions don't collide with graphics, and the face is never cropped.
 - The Huige window pose at the end of each section equals the pose at the start of the next, so joins are invisible.

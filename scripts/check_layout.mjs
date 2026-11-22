@@ -137,6 +137,21 @@ for (const t of times) {
   rep.outside.forEach(o => console.log(`  FAIL outside  \"${o.text}\"  x=${Math.round(o.x)} y=${Math.round(o.y)} ${Math.round(o.w)}x${Math.round(o.h)}`));
   if (rep.empty.length) console.log('  WARN empty zones (col,row): ' + rep.empty.map(z => `${z.cx},${z.cy}`).join(' '));
 }
+
+/* motion audit: fast cuts are cut frames, not animated frames */
+const motion = await page.evaluate(() => {
+  const scenes = (window.EV && window.EV.scenes) || [];
+  const fast = scenes.filter(s => s.t1 > s.t0 && s.t1 - s.t0 < 1.2);
+  const animatedFast = fast.filter(s => typeof s.update === 'function').map(s => [s.t0, s.t1]);
+  const keys = (window.EV && window.EV.huigeKeys) || [];
+  const glideAtFast = keys.filter(k => k.d > 0 && fast.some(s => k.t < s.t1 && k.t + k.d > s.t0)).map(k => [k.t, k.d]);
+  return { fast: fast.length, animatedFast, glideAtFast };
+});
+let motionFails = 0;
+motion.animatedFast.forEach(([a, b]) => { motionFails++; console.log(`  FAIL fast-shot animation  ${a.toFixed(2)}–${b.toFixed(2)}s (${(b - a).toFixed(2)}s shot)`); });
+motion.glideAtFast.forEach(([t, d]) => { motionFails++; console.log(`  FAIL presenter glide inside fast cut  t=${t.toFixed(2)}s d=${d.toFixed(2)}s`); });
+if (motionFails) { fails += motionFails; console.log(`\nMOTION FAIL  (${motionFails})`); }
+else console.log(`\nMOTION OK  (${motion.fast} fast shots, no in-frame animation, no window glide)`);
 await browser.close();
 console.log(`\n${fails ? 'LAYOUT FAIL' : 'LAYOUT OK'}  (${fails} fail, ${warns} empty-zone warns)`);
 process.exit(fails ? 1 : 0);

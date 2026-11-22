@@ -51,7 +51,7 @@ Never flatten all sections into one default bold font. Use the template's palett
 
 - Render stills at **full opacity** (not mid-fade); measure text bounding boxes and check no decoration sits behind the glyphs.
 - Check vertical centring in cards/pills and no accidental overlap from rotations.
-- Run `scripts/check_layout.mjs SECTION/index.html --times ...` before rendering: it flags text-on-text, text-on-card, text-over-presenter, off-frame text, and large empty zones (WARN). Keep stacked lines on `lineHeight: 1` so the gate measures glyph boxes rather than padded line boxes.
+- Run `scripts/check_layout.mjs SECTION/index.html --times ...` before rendering: it flags text-on-text, text-on-card, text-over-presenter, off-frame text, and large empty zones (WARN). It also runs a motion audit and must print `MOTION OK`: any shot under 1.2 s with an in-frame `update` animation or a presenter-window glide fails. Keep stacked lines on `lineHeight: 1` so the gate measures glyph boxes rather than padded line boxes.
 - Contact sheet every 1–3 s; no empty frames, no text off-canvas, no text over the presenter's face.
 - Captions: Smiley Sans Oblique, CN 48 px (keyword 62), EN 34 px sentence case, no punctuation, orange `#FF7A00` 1.3×, no bold.
 - Full master: frame count equals source, -16 LUFS, QA no FAIL; intentional static/reading-speed WARNs must be explained.
