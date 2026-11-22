@@ -40,7 +40,9 @@ Never flatten all sections into one default bold font. Use the template's palett
 ## 4 · Animation on the element itself
 
 - Entrance: slide / pop / wipe / draw / rise, not just opacity.
-- Idle: gentle float, glow pulse, rotation, drifting particles, light sweep, scan line.
+- Idle: only content-driven motion — scan line, light sweep, path draw, counter, camera push, or a glow pulse locked to a spoken beat. Static is better than decorative motion.
+- **No cheap motion:** never bob, breathe, shake, jitter or randomly float whole cards/text blocks just to look animated. This is the main reason a section reads like a PPT with a filter.
+- Accepted motion reference: `projects/20261122_HUIGE风格基线/out/FULL117_CN-EN.mp4` — hard cuts, split screens, big type, camera push; motion follows the edit, not a uniform loop.
 - Auxiliary elements must be content-related: arrows for a path, book stairs for learning, mic/film icons for dubbing, stamps for a problem, labels for a comparison. No random decoration.
 - Minimal templates (T21) stay restrained: slow rise, hairline draws, compass rotation — do not force busy motion.
 

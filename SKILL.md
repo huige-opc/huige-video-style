@@ -50,7 +50,7 @@ When the user names templates, use exactly those for those parts. When they don'
 - Three-level hierarchy: mono/small-caps kicker → one display line → light body/subline. Never stack several equal-size 900-weight blocks.
 - Centre text vertically in cards/pills; shared 110 px left margin and 44 px inner padding.
 - Reveal every element at the spoken word/cue from the SRT/ASR; never batch-reveal early or leave a planned element outside the section's time range.
-- Give each element an entrance animation and idle motion (float, glow pulse, draw, light sweep). Minimal templates stay restrained.
+- Give each element a real entrance. Idle motion only when it carries information: scan line, light sweep, path draw, counter, camera push, or a glow pulse tied to a spoken beat. **No cheap motion (2026-11-23):** no whole-card bobbing, breathing, shaking, jitter or random float just to look animated. Static is better than decorative motion. Minimal templates stay restrained. Accepted motion reference: `projects/20261122_HUIGE风格基线/out/FULL117_CN-EN.mp4`.
 - Auxiliary elements are content-related (arrows, book stairs, mic/film icons, stamps, comparison labels), never random decoration.
 - Read `references/typography-and-reveal.md` before building; the accepted 117.7 s master lives in `projects/20261122_HUIGE风格基线/`.
 

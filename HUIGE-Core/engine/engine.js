@@ -83,6 +83,12 @@
     if (count) i = Math.min(count - 1, Math.max(0, i));
     return `${dir}/f_${pad(i)}.jpg`;
   }
+  /* loop a short presenter clip over a long section: hloop=<frame count> */
+  function seqLoop(dir, seconds, count) {
+    let i = Math.round(seconds * FPS);
+    if (count) i = ((i % count) + count) % count;
+    return `${dir}/f_${pad(i)}.jpg`;
+  }
 
   /* Huige window path: keys [{t, d, L:{x,y,w,h,r,s,o}}]. Each key starts at t and eases (quintic) to L over d seconds,
    * starting from wherever the window is at that moment, so overlapping moves blend without jumps. */
@@ -101,9 +107,9 @@
   }
 
   const S = {
-    FPS, clamp, lerp, ease, P, rng, el, tf, pop, slide, wipe, setSrc, seq,
+    FPS, clamp, lerp, ease, P, rng, el, tf, pop, slide, wipe, setSrc, seq, seqLoop,
     W, H, AR, portrait: PORTRAIT, params: Q,
-    scenes: [], end: 10, src0: 0, huigeDir: '../media/huige',
+    scenes: [], end: 10, src0: 0, huigeDir: '../media/huige', huigeLoop: +Q.get('hloop') || 0,
     /* size of the presenter footage frames (any orientation: a 9:16 phone clip is { w: 1080, h: 1920 }) */
     src: { w: 1920, h: 1080 },
     /* face calibration of the talking-head footage, as fractions of the source frame:
@@ -138,7 +144,7 @@
     const ty = lerp(.44, .52, roundness);
     const left = clamp(w / 2 - S.face.x * iw, w - iw, 0), top = clamp(h * ty - S.face.y * ih, h - ih, 0);
     Object.assign(S.huigeImg.style, { width: iw.toFixed(2) + 'px', height: ih.toFixed(2) + 'px', left: left.toFixed(2) + 'px', top: top.toFixed(2) + 'px' });
-    if (vis) setSrc(S.huigeImg, seq(S.huigeDir, S.src0 + t));
+    if (vis) setSrc(S.huigeImg, S.huigeLoop ? seqLoop(S.huigeDir, S.src0 + t, S.huigeLoop) : seq(S.huigeDir, S.src0 + t));
     const ring = S.ringFn ? S.ringFn(t) : { color: '#fff', width: 0, shadow: 0 };
     const hb = S.huigeHud; hb.style.display = ring.hud && vis && !FULL ? 'block' : 'none';
     if (ring.hud) { const m = 12; Object.assign(hb.style, { left: (g.x - m) + 'px', top: (g.y - m) + 'px', width: (w + 2 * m) + 'px', height: (h + 2 * m) + 'px', color: ring.hud, opacity: clamp(g.o) }); }
@@ -187,6 +193,7 @@
     const stage = document.getElementById('stage');
     /* per-render overrides (renderer / SaaS worker pass them in the URL): huige=frames dir, srcw/srch=footage size, face=x,y,h */
     if (Q.get('huige')) S.huigeDir = Q.get('huige');
+    if (Q.get('hloop')) S.huigeLoop = +Q.get('hloop');
     if (Q.get('srcw')) S.src = { w: +Q.get('srcw'), h: +(Q.get('srch') || S.src.h) };
     if (Q.get('face')) { const [x, y, h] = Q.get('face').split(',').map(Number); S.face = { x, y, h }; }
     if (PORTRAIT) { document.documentElement.classList.add('ar-portrait');
@@ -205,6 +212,7 @@
     });
     /* scene setup (e.g. tmotion M.setup) may overwrite the defaults; apply URL overrides again after build */
     if (Q.get('huige')) S.huigeDir = Q.get('huige');
+    if (Q.get('hloop')) S.huigeLoop = +Q.get('hloop');
     if (Q.get('srcw')) S.src = { w: +Q.get('srcw'), h: +(Q.get('srch') || S.src.h) };
     if (Q.get('face')) { const [x, y, h] = Q.get('face').split(',').map(Number); S.face = { x, y, h }; }
     /* automatic whoosh on every scene change unless the scene is quiet */

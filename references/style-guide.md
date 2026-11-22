@@ -39,7 +39,7 @@ Fast-paced viewers do not decode metaphors. A graphic must be understood in abou
 
 ## Type hierarchy and reveal (2026-11-22)
 
-Every template keeps its own type system (see `typography-and-reveal.md`). Use three levels — mono/small-caps kicker, one display line, light body/subline — never a stack of equal-size 900-weight blocks. Reveal each element on the spoken word/cue; give every element an entrance plus idle motion. Minimal templates stay restrained. No random decoration: auxiliary arrows, books, icons and labels must relate to the content.
+Every template keeps its own type system (see `typography-and-reveal.md`). Use three levels — mono/small-caps kicker, one display line, light body/subline — never a stack of equal-size 900-weight blocks. Reveal each element on the spoken word/cue; give every element a real entrance. Idle motion only when it carries information: scan line, light sweep, path draw, counter, camera push, or a beat-locked glow. Never use whole-card bobbing, breathing, shaking, jitter or random float as filler. Minimal templates stay restrained. No random decoration: auxiliary arrows, books, icons and labels must relate to the content.
 
 ## Type
 - **English display:** giant condensed uppercase (Anton), 90–260 px, tight line height.
