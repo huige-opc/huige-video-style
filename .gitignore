@@ -13,6 +13,13 @@ jobs/
 *.wav
 *.log
 .DS_Store
+# local secrets: never commit API keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
 template/demo/media/
 template/sample5/media
 template/sample5/media26

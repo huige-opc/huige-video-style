@@ -562,6 +562,18 @@ python HUIGE-Core/core/pipeline.py edit raw/talk.mp4 jobs/v1 \
 
 ---
 
+## 密钥安全
+
+仓库里不包含任何 API Key、云服务密钥或账号密码。
+
+如果你接入 DeepSeek、火山、Fish、OpenAI 等服务：
+
+- 密钥只放在本机环境变量或本地 `.env` 文件里。
+- `.env`、`.env.*`、`*.pem`、`*.key`、`secrets/` 已在 `.gitignore` 中排除。
+- 不要把密钥写进 `scenes.js`、模板、README、示例配置或截图。
+- 分享项目前先跑 `git status`，确认没有把本地配置带进去。
+- 如果不小心提交了密钥，先撤销并在服务商后台轮换，再清理 git 历史。
+
 ## 模板说明
 
 ### 23 套正式模板
