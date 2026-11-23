@@ -65,7 +65,23 @@ Sections are independent, so they can render in parallel. Verify each section's 
 python3 scripts/merge_cues.py sec/all_cues.json sec/s1_cues.json:0 sec/s2_cues.json:<s2 start seconds> ...
 python3 scripts/sfx.py sec/all_cues.json <total seconds> sec/sfx.wav
 ```
-`assemble.sh` mixes the original voice with this stem and normalizes the result to -16 LUFS. **Never add music.**
+`assemble.sh` mixes the original voice with this stem and normalizes the result to -16 LUFS. **Never add music** (exception: §7b).
+
+## 7b. BGM — only when the user explicitly asks (2026-11-24, validated on a 439 s master)
+
+The default stays **no BGM**. When the user explicitly requests background music, follow these rules — every one comes from a real rejection:
+
+1. **Constant volume under the voice. Never sidechain / ducking / auto-duck** — the breathing "loud-quiet-loud" effect was explicitly rejected by the user.
+2. **No fade in / fade out.** Loop the track across the full length (`-stream_loop -1`) and cut it off with `duration=first`.
+3. **Keep it far below the voice:** BGM `volume=0.20`; the voice may be boosted (e.g. `volume=5dB`) but must go through `alimiter` so it never clips.
+4. **Section renders are silent video.** When concatenating, attach the voice track explicitly (`-i voice.mp3 -map 1:a`), otherwise every later audio filter fails with `Stream specifier ':a' matches no streams`.
+5. Validated mix chain (after concat + loudnorm on the voice):
+```bash
+ffmpeg -y -i CLEAN.mp4 -i bgm.mp3 -stream_loop -1 \
+  -filter_complex "[0:a]volume=5dB[v2];[1:a]aformat=sample_rates=48000:channel_layouts=stereo,volume=0.20[bg];[v2][bg]amix=inputs=2:duration=first:normalize=0[mix];[mix]alimiter=limit=0.85:level=false[aout]" \
+  -map 0:v -map "[aout]" -c:v copy -c:a aac -b:a 192k OUT.mp4
+```
+6. Verify with `ffmpeg -i OUT.mp4 -af ebur128=peak=true -f null -`: with BGM expect roughly -13 LUFS and **peak ≤ -1 dB** (measured -1.0 dB on the accepted master).
 
 ## 8. Captions
 1. Copy the SRT.
@@ -75,6 +91,12 @@ python3 scripts/sfx.py sec/all_cues.json <total seconds> sec/sfx.wav
 python3 scripts/captions.py srt/talk.srt 0 99999 out/NAME_CN-EN srt/display_fix.json
 ```
 This writes the editable `.srt` and the styled `.ass`.
+
+4. **English coverage must be 100%** — every `Dialogue:` line in the `.ass` must carry an `\rEN` English line. Check (PowerShell):
+```powershell
+(Get-Content out/NAME_CN-EN.ass | Where-Object {$_ -like 'Dialogue:*'} | Where-Object {$_ -notmatch '\\rEN'}).Count   # must be 0
+```
+Real incident (2026-11-23): single-line cues take a separate dictionary in the build script; cues added later without an English entry shipped sections with Chinese-only captions. **Rule: every cue added or edited gets its English line in the same commit, and the coverage check above must print 0 before assembly.**
 
 ## 9. Assemble and verify
 ```
@@ -96,7 +118,9 @@ Check:
   - anything that was left out or labelled illustrative
 
 ## Troubleshooting
-- **Black or blank speaker window:** check `EV.huigeDir` relative to the section folder, and the frame naming (`f_00000.jpg`).
+- **Black or blank speaker window:** check `EV.huigeDir` relative to the section folder, and the frame naming (`f_00000.jpg`). Also check the `huige=` media path is a **raw (non-URL-encoded) path** — percent-encoded Chinese paths silently fail to load every person frame, blacking the window even in stills.
+- **Black window in the rendered mp4 while stills look fine:** the renderer must not carry `--font-render-hinting=none` in video mode (`--out`); `render.mjs` handles this per-mode. Then run `scripts/final_qa.mjs` — it catches exactly this class of bug.
+- **`Stream specifier ':a' matches no streams`:** the section renders are silent; attach the voice track at concat (`-i voice.mp3 -map 1:a`) before any audio filter.
 - **Fonts fall back to a default:** check `engine/fonts/` and the system font install, and pass `FONTSDIR` to `assemble.sh` for caption fonts.
 - **"Refusing to overwrite":** the scripts never replace existing outputs. Choose a new name or version folder.
 - **Joins jump:** the last `huigeKeys` pose of section N must equal the first pose of section N+1, and `src0` must equal the exact start frame ÷ 30.

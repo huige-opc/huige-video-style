@@ -86,7 +86,7 @@ Full recipe, worked frame map and checklist: `references/concept-sections.md`.
 ## Non-negotiables
 
 1. **16:9, 1920×1080, 30 fps.** No chapter bars, shot numbers, timecodes or watermarks in the output.
-2. **No background music, ever.** This includes music inside any clip or template, which must be muted. Keep the speaker's original voice untouched (trim only). Add short SFX only (whoosh, pop, click, impact, ding, applause). Final loudness is about **-16 LUFS**.
+2. **No background music by default.** This includes music inside any clip or template, which must be muted. Keep the speaker's original voice untouched (trim only). Add short SFX only (whoosh, pop, click, impact, ding, applause). Final loudness is about **-16 LUFS**. **Exception — only when the user explicitly asks for BGM:** mix it at constant volume under the voice (never sidechain/ducking — the breathing effect was rejected), no fade in/out, looped across the full length; see `references/pipeline.md` §7b for the validated chain.
 3. **The speaker's whole head is always visible**, from hair to chin, in every window shape. Never crop the face; calibrate the face position on every new shoot.
 4. **Never overwrite** source videos, old projects or approved samples. Every output goes to a new versioned folder (`v1_samples/`, `v1_full/`, `v2_full/` ...).
 5. **Never invent facts, numbers or software screens.** Show real UI only from real screen recordings. Label anything conceptual `ILLUSTRATIVE` and draw it without fake numbers. Show stated results (scores, prices, dates) exactly as spoken.
@@ -143,7 +143,8 @@ For a quick rough draft, the bundled `HUIGE-Core/` can run the Registry-driven p
 ## Before delivering, verify
 
 - The frame count of the final equals the source video's frame count. Section boundaries must be frame-exact.
-- The whole video decodes without errors, and loudness is about -16 LUFS.
+- The whole video decodes without errors, and loudness is about -16 LUFS (with user-requested BGM: roughly -13 LUFS, peak ≤ -1 dB).
+- **Bilingual ASS English coverage is 100%**: zero `Dialogue:` lines without an `\rEN` English line (`references/pipeline.md` §8 has the one-line check). Sections with Chinese-only captions are a delivery blocker.
 - Run `scripts/check_layout.mjs` on every section at 2–3 spoken-cue times; it must print `LAYOUT OK` and `MOTION OK`. Layout checks text-on-text, text-on-card, text-over-presenter and off-frame text. Motion checks reject any shot under 1.2 s that still has an in-frame `update` animation or a presenter-window glide. When the section has text-to-text cuts, pass `--srt` and `--offset`; it must also print `CUT TIMING OK`. Empty-zone WARNs are reviewed by eye.
   <!-- 落地: scripts/check_layout.mjs -->
 - Run `scripts/check_contract.mjs` on every section at 6–10 cue times; it must print `CONTRACT OK`. It enforces `references/layout-contract.md`: text inside the safe area (x 90–1830, y 40–1040), **no text in the caption band (y ≥ 862)**, no text under the presenter window (>10% overlap), the presenter window fully inside the frame, and the presenter never half-transparent at a sampled time. **Do not render a section until it passes.**
