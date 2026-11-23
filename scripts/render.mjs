@@ -25,7 +25,9 @@ const req = createRequire(join(process.cwd(), 'noop.js'));
 let pw; for (const m of ['playwright', 'playwright-core']) { try { pw = req(m); break; } catch { } }
 if (!pw) { console.error('Install Playwright first: npm i playwright  (or playwright-core with your own Chromium)'); process.exit(1); }
 
-const browser = await pw.chromium.launch({ executablePath: opt('browser', process.env.CHROME) || undefined, args: ['--allow-file-access-from-files', '--disable-web-security', '--font-render-hinting=none'] });
+/* --font-render-hinting=none 只许用于截图模式（stills/cues）：它能让 stills 观感匹配视频；
+ * 但视频模式（--out）下它会导致人物 img 不绘制（人物窗全黑），严禁携带。 */
+const browser = await pw.chromium.launch({ executablePath: opt('browser', process.env.CHROME) || undefined, args: ['--allow-file-access-from-files', '--disable-web-security', ...(out ? [] : ['--font-render-hinting=none'])] });
 const page = await browser.newPage({ viewport: VP, deviceScaleFactor: 1 });
 page.on('pageerror', e => console.error('[page error]', e.message));
 await page.addInitScript(a => { window.EV_AR = a; }, AR);

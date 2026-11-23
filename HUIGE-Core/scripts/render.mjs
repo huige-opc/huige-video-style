@@ -32,7 +32,8 @@ const req = createRequire(join(process.cwd(), 'noop.js'));
 let pw; for (const m of ['playwright', 'playwright-core']) { try { pw = req(m); break; } catch { } }
 if (!pw) { console.error('Install Playwright first: npm i playwright  (or playwright-core with your own Chromium)'); process.exit(1); }
 
-const browser = await pw.chromium.launch({ executablePath: opt('browser', process.env.CHROME) || undefined, args: ['--allow-file-access-from-files', '--disable-web-security', '--font-render-hinting=none'] });
+/* 视频模式（--out）严禁携带 --font-render-hinting=none（人物窗全黑）；截图模式保留 */
+const browser = await pw.chromium.launch({ executablePath: opt('browser', process.env.CHROME) || undefined, args: ['--allow-file-access-from-files', '--disable-web-security', ...(out ? [] : ['--font-render-hinting=none'])] });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
 const noQa = args.includes('--no-qa'), qaIssues = [];
 page.on('pageerror', e => { console.error('[page error]', e.message); qaIssues.push('JavaScript error: ' + e.message); });

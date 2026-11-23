@@ -13,6 +13,7 @@
  * It reads the live DOM after renderAt(t), so it works for engine scenes and
  * concept-template sections alike (no screenshots, no OCR). */
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -21,6 +22,8 @@ const entry = args[0] && !args[0].startsWith('--') ? args[0] : null;
 const opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; };
 if (!entry) { console.error('usage: check_layout.mjs SECTION/index.html --times a,b,c'); process.exit(2); }
 const times = opt('times', '1,4,7').split(',').map(Number);
+const srtPath = opt('srt', '');
+const srtOffset = +opt('offset', 0);
 
 const req = createRequire(resolve('noop.js'));
 let pw; for (const m of ['playwright', 'playwright-core']) { try { pw = req(m); break; } catch { } }
@@ -105,11 +108,17 @@ for (const t of times) {
       if (evR) { const ia = inter(a, evR); if (ia > 0.1 * a.w * a.h) underHuige.push({ ...a, frac: +(ia / (a.w * a.h)).toFixed(2) }); }
       for (let j = i + 1; j < texts.length; j++) {
         const b = texts[j];
+        /* 父子文本（如 sciHead 的高亮 span）不算互压 */
+        if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+        /* 同一 SVG 里的同字叠层（描边字 sh+tx）不算互压 */
+        if (a.text === b.text && a.el.ownerSVGElement && a.el.ownerSVGElement === b.el.ownerSVGElement) continue;
         const ia = inter(a, b);
         if (ia > 0.25 * Math.min(a.w * a.h, b.w * b.h)) overlaps.push({ a: a.text, b: b.text, frac: +(ia / Math.min(a.w * a.h, b.w * b.h)).toFixed(2) });
       }
       for (const p of panels) {
         if (p.el.contains(a.el) || a.el.contains(p.el)) continue;
+        /* 背景板：完全包住文字且在文字之前绘制 → 是底板，不算压字 */
+        if (a.x >= p.x && a.y >= p.y && a.x + a.w <= p.x + p.w && a.y + a.h <= p.y + p.h && (p.el.compareDocumentPosition(a.el) & 4)) continue;
         const ip = inter(a, p);
         if (ip > 0.25 * a.w * a.h) cardOverlaps.push({ text: a.text, frac: +(ip / (a.w * a.h)).toFixed(2) });
       }
@@ -147,9 +156,10 @@ const motion = await page.evaluate(() => {
   const glideAtFast = keys.filter(k => k.d > 0 && fast.some(s => k.t < s.t1 && k.t + k.d > s.t0)).map(k => [k.t, k.d]);
   const storyTr = (window.EV && window.EV.storyTr) || [];
   const storyTB = (window.EV && window.EV.storyTB) || [];
-  const cutAt = storyTB.slice(1).map((x, i) => storyTr[i] === 'cut' ? x[0] : null).filter(v => v != null);
+  const storyTrd = (window.EV && window.EV.storyTrd) || 0;
+  const cutAt = storyTB.slice(1).map((x, i) => storyTr[i] === 'cut' ? x[0] - storyTrd / 2 : null).filter(v => v != null);
   const glideAtCut = keys.filter(k => k.d > 0 && cutAt.some(t => k.t < t + .34 && k.t + k.d > t - .34)).map(k => [k.t, k.d]);
-  return { fast: fast.length, animatedFast, glideAtFast, glideAtCut };
+  return { fast: fast.length, animatedFast, glideAtFast, glideAtCut, cutAt };
 });
 let motionFails = 0;
 motion.animatedFast.forEach(([a, b]) => { motionFails++; console.log(`  FAIL fast-shot animation  ${a.toFixed(2)}–${b.toFixed(2)}s (${(b - a).toFixed(2)}s shot)`); });
@@ -157,6 +167,24 @@ motion.glideAtFast.forEach(([t, d]) => { motionFails++; console.log(`  FAIL pres
 motion.glideAtCut.forEach(([t, d]) => { motionFails++; console.log(`  FAIL presenter glide across a cut transition  t=${t.toFixed(2)}s d=${d.toFixed(2)}s`); });
 if (motionFails) { fails += motionFails; console.log(`\nMOTION FAIL  (${motionFails})`); }
 else console.log(`\nMOTION OK  (${motion.fast} fast shots, no in-frame animation, no window glide)`);
+
+/* cut timing: every text-to-text cut must land 0.06–0.35 s before the next SRT cue */
+if (srtPath && motion.cutAt.length) {
+  const srt = readFileSync(srtPath, 'utf8');
+  const starts = [...srt.matchAll(/(\d{2}):(\d{2}):(\d{2}),(\d{3})\s*-->/g)]
+    .map(m => +m[1] * 3600 + +m[2] * 60 + +m[3] + +m[4] / 1000 - srtOffset);
+  let cutFails = 0;
+  motion.cutAt.forEach(b => {
+    const next = starts.filter(x => x >= b).sort((a, c) => a - c)[0];
+    const gap = next == null ? null : next - b;
+    if (gap == null || gap < .06 || gap > .35) {
+      cutFails++;
+      console.log(`  FAIL cut-to-cue gap  cut=${b.toFixed(2)}s nextCue=${next == null ? 'none' : next.toFixed(2) + 's'} gap=${gap == null ? 'none' : gap.toFixed(2) + 's'}`);
+    }
+  });
+  if (cutFails) { fails += cutFails; console.log(`\nCUT TIMING FAIL  (${cutFails})`); }
+  else console.log(`\nCUT TIMING OK  (${motion.cutAt.length} cuts land 0.06–0.35s before the next cue)`);
+}
 await browser.close();
 console.log(`\n${fails ? 'LAYOUT FAIL' : 'LAYOUT OK'}  (${fails} fail, ${warns} empty-zone warns)`);
 process.exit(fails ? 1 : 0);

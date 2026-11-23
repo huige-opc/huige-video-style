@@ -12,6 +12,7 @@ Read these before building:
 - `references/style-guide.md` — the look: palette, type, Huige window, motion vocabulary, themes, signature beats, captions.
 - `references/pipeline.md` — step-by-step production, from raw video to delivered masters.
 - `references/engine-api.md` — how to write a section with the bundled engine (`engine/`, `template/section/`).
+- `references/layout-contract.md` — **hard layout contract (2026-11-23)**: fixed header / content / caption bands, presenter-window rules, no invented UI, camera push ≤ 2%, and the two-gate + contact-sheet workflow. Read before writing any section.
 - `references/concept-sections.md` — turning a 10 s T30–T200 concept into an N-second hand-written section: timing, window continuity, scene boundaries, clarity rules and the layout gate.
 - `references/architecture-and-positioning.md` — how `template/` and `templates/` fit together, demo vs sample5 vs concepts vs examples, editing vs generation positioning, and the presenter-screen-share issue.
 
@@ -47,13 +48,15 @@ When the user names templates, use exactly those for those parts. When they don'
 ## Typography, reveal and density (accepted 2026-11-22)
 
 - Keep each template's own type system; never flatten every section to one default bold font.
-- Three-level hierarchy: mono/small-caps kicker → one display line → light body/subline. Never stack several equal-size 900-weight blocks.
+- One display line is the header; at most ONE lighter subline under it. **Never stack a mono kicker + title + subline** — the kicker usually just repeats the title (delete it). No floating footer labels in empty space (e.g. a mono line under the composition); put that information into the cards/labels. Small mono/English labels are used only when they carry real information (template ID, timecode, page number), not as a mandatory row on every scene. <!-- 落地: references/layout-contract.md §三½; scripts/check_contract.mjs (text-on-graphic / tinyChip rules) -->
+- All boxes that carry text must have an explicit width/height or use `M.chipbox(...)` — an absolutely-positioned text child does not size its parent. Arrows/lines: use `M.arrow(...)` with explicit points, and never route them across a card.
 - Centre text vertically in cards/pills; shared 110 px left margin and 44 px inner padding.
 - Reveal every element at the spoken word/cue from the SRT/ASR; never batch-reveal early or leave a planned element outside the section's time range.
 - Give each element a real entrance. Idle motion only when it carries information: scan line, light sweep, path draw, counter, camera push, or a glow pulse tied to a spoken beat. **No cheap motion (2026-11-23):** no whole-card bobbing, breathing, shaking, jitter or random float just to look animated. Static is better than decorative motion. Minimal templates stay restrained. Accepted motion reference: `projects/20261122_HUIGE风格基线/out/FULL117_CN-EN.mp4`.
 - **Impact floor:** every 3–5 s there must be a visual event — hard cut, full-bleed colour change, big type move, camera push, or a new content group. Never hold one static card for more than about 2 s; a long line needs cuts, reveals or a layout change.
 - **Fast-cut rule:** a shot under ~1.2 s is a cut frame — the cut is the motion. Elements appear already composed; no in-frame entrance, idle motion or window glide. 1.2–2.5 s allows one short entrance; only 2.5 s+ shots may reveal multiple elements or move the presenter window.
-- **Text-to-text transitions:** use `tr: ['cut', 'cut']` and make every presenter key at that boundary `d: 0`. Never cross-fade text with `zoom`/`blur`, and never let a window glide cross the cut — that is what leaves the previous second's frame showing through.
+- **Text-to-text transitions:** use `tr: ['cut', 'cut']` and make every presenter key at that boundary `d: 0`. Never cross-fade text with `zoom`/`blur`, and never let a window glide cross the cut — that is what leaves the previous second's frame showing through. `M.TR.cut` hides the old scene on the first transition frame; keep `trd` ≤ 0.2 s so the effective cut lands about 0.1 s before the next cue. New-scene titles must be pre-entered 0.12–0.18 s. Verify with `check_layout.mjs --srt <file> --offset <section start>`; it must print `CUT TIMING OK` (effective cut 0.06–0.35 s before the next cue).
+- **Preferred root fix for text cuts:** render each scene as its own clip (`?scene=0/1/2` selects one scene in `M.story`) and hard-concat the clips. Two text scenes never share a page or a frame, so no transition can leak the previous frame. Use in-page `cut` only when the section must stay one file.
 - Auxiliary elements are content-related (arrows, book stairs, mic/film icons, stamps, comparison labels), never random decoration.
 - Read `references/typography-and-reveal.md` before building; the accepted 117.7 s master lives in `projects/20261122_HUIGE风格基线/`.
 
@@ -107,6 +110,10 @@ scripts/extract_frames.sh raw/screen.mp4 media/screen     # real screen recordin
 # 2. sections: copy template/section/ per 15–40 s chunk, write scenes.js (see references/engine-api.md)
 node scripts/render.mjs s1/index.html --stills check/s1 --times 1,4,8,12   # layout check
 node scripts/check_layout.mjs s1/index.html --times 1,4,8,12               # overlap / over-face / empty-zone gate
+node scripts/check_contract.mjs s1/index.html --times 1,4,8,12             # safe area / caption band / presenter window contract
+python scripts/contact.py check/s1_sheet.jpg check/s1                      # 8-frame contact sheet
+# text-to-text cuts: render each scene to its own clip, then hard-concat (no double-scene frame at all)
+node scripts/render_section.mjs s1 "0:3.5,3.5:11.09,11.09:20.17" sec/s1.mp4
 node scripts/render.mjs s1/index.html --out sec/s1.mp4                     # silent render
 node scripts/render.mjs s1/index.html --cues sec/s1_cues.json              # sound cues
 # 3. audio + captions + assembly
@@ -137,6 +144,12 @@ For a quick rough draft, the bundled `HUIGE-Core/` can run the Registry-driven p
 
 - The frame count of the final equals the source video's frame count. Section boundaries must be frame-exact.
 - The whole video decodes without errors, and loudness is about -16 LUFS.
-- Run `scripts/check_layout.mjs` on every section at 2–3 spoken-cue times; it must print `LAYOUT OK` and `MOTION OK`. Layout checks text-on-text, text-on-card, text-over-presenter and off-frame text. Motion checks reject any shot under 1.2 s that still has an in-frame `update` animation or a presenter-window glide. Empty-zone WARNs are reviewed by eye.
-- On a contact sheet (`scripts/contact_sheet.sh`), no text sits under the Huige window, nothing is cut off at the frame edge, captions don't collide with graphics, and the face is never cropped.
+- Run `scripts/check_layout.mjs` on every section at 2–3 spoken-cue times; it must print `LAYOUT OK` and `MOTION OK`. Layout checks text-on-text, text-on-card, text-over-presenter and off-frame text. Motion checks reject any shot under 1.2 s that still has an in-frame `update` animation or a presenter-window glide. When the section has text-to-text cuts, pass `--srt` and `--offset`; it must also print `CUT TIMING OK`. Empty-zone WARNs are reviewed by eye.
+  <!-- 落地: scripts/check_layout.mjs -->
+- Run `scripts/check_contract.mjs` on every section at 6–10 cue times; it must print `CONTRACT OK`. It enforces `references/layout-contract.md`: text inside the safe area (x 90–1830, y 40–1040), **no text in the caption band (y ≥ 862)**, no text under the presenter window (>10% overlap), the presenter window fully inside the frame, and the presenter never half-transparent at a sampled time. **Do not render a section until it passes.**
+  <!-- 落地: scripts/check_contract.mjs -->
+- Build a contact sheet with `python scripts/contact.py check/sN_sheet.jpg check/sN` and open it: no text under the Huige window, nothing cut at the frame edge, captions don't collide with graphics, no half-cropped head.
+  <!-- 落地: scripts/contact.py -->
+- After rendering each section mp4, run `node scripts/final_qa.mjs sN <out.mp4> [times]`; it must print `VIDEO QA OK`. It compares the mp4 frame against the page still (luminance diff >12% = FAIL) and catches problems that stills and probes cannot see — e.g. the presenter window rendering black in video mode while stills look fine. This is the third layer of the mandatory post-generation self-check (gates → AI visual inspection → final_qa); see `references/layout-contract.md` §四¾. Never hand unverified output to the user for review.
+  <!-- 落地: scripts/final_qa.mjs -->
 - The Huige window pose at the end of each section equals the pose at the start of the next, so joins are invisible.
