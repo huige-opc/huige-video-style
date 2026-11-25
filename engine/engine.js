@@ -1,4 +1,4 @@
-/* Huige Video Style · deterministic motion engine
+﻿/* Huige Video Style · deterministic motion engine
  *
  * A section page is a pure function of time: the renderer calls window.renderAt(t) for every frame,
  * waits for window.imgWait(), then takes a screenshot. Nothing depends on wall-clock time, so every
@@ -73,7 +73,7 @@
   const pending = new Set();
   function setSrc(img, src) {
     if (img.getAttribute('src') === src) return;
-    const pr = new Promise(res => { img.onload = img.onerror = () => res(); });
+    const pr = new Promise(res => { img.onload = () => { if (img.decode) img.decode().then(res, res); else res(); }; img.onerror = () => res(); });
     pending.add(pr); pr.then(() => pending.delete(pr));
     img.setAttribute('src', src);
   }

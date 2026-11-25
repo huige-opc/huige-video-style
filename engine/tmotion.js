@@ -78,6 +78,32 @@
   /* placeholder brand mark (the studio's own HUIGE monogram) for logo-only templates: .lr frame (drawable), .lt wordmark */
   M.logo = (p, x, y, sz, col, fill) => M.svg(p, x, y, sz, sz, `<rect class="lr" x="${sz * .04}" y="${sz * .04}" width="${sz * .92}" height="${sz * .92}" rx="${sz * .24}" fill="${fill || 'none'}" stroke="${col}" stroke-width="${sz * .045}" pathLength="1" stroke-dasharray="1 1"/><text class="lt" x="${sz / 2}" y="${sz * .62}" text-anchor="middle" font-family="Anton, sans-serif" font-size="${sz * .3}" fill="${col}" letter-spacing="${sz * .012}" textLength="${sz * .76}" lengthAdjust="spacingAndGlyphs">HUIGE</text>`, { transformOrigin: '50% 50%' });
 
+
+  /* 显式尺寸胶囊：标题 + 副行，文字在框内（避免零尺寸色块把字漏在外面） */
+  M.chipbox = (p, x, y, w, h, bg, title, sub, o = {}) => {
+    const d = M.box(p, x, y, Object.assign({ width: w + 'px', height: h + 'px', background: bg, borderRadius: (o.r ?? 14) + 'px', zIndex: o.z ?? 5, transformOrigin: '50% 50%' }, o.style || {}));
+    const fs = o.fs ?? 44, ss = o.ss ?? 13, hasSub = !!sub, block = fs + (hasSub ? ss + 14 : 0);
+    const top = o.align === 'left' ? (o.py ?? 14) : Math.max(0, (h - block) / 2);
+    if (o.align === 'left') {
+      M.txt(d, o.px ?? 22, top, M.f(900, fs, o.fam || M.AN), o.fg || '#12100b', title, { lineHeight: 1, zIndex: 6 });
+      if (hasSub) M.txt(d, (o.px ?? 22) + 2, top + fs + 10, M.f(700, ss, M.MONO), o.subfg || 'rgba(0,0,0,.65)', sub, { letterSpacing: '3px', zIndex: 6 });
+    } else {
+      M.txt(d, 0, top, M.f(900, fs, o.fam || M.AN), o.fg || '#12100b', title, { width: w + 'px', textAlign: 'center', lineHeight: 1, zIndex: 6 });
+      if (hasSub) M.txt(d, 0, top + fs + 12, M.f(700, ss, M.MONO), o.subfg || 'rgba(0,0,0,.65)', sub, { width: w + 'px', textAlign: 'center', letterSpacing: '3px', zIndex: 6 });
+    }
+    return d;
+  };
+  /* 折线箭头：pts=[[x,y],...]，箭头画在终点；先定两点，避免穿过卡片 */
+  M.arrow = (p, pts, col, sw = 6) => {
+    const d = 'M' + pts.map(q => q.join(' ')).join(' L');
+    const path = M.path(p, 0, 0, 1920, 1080, d, col, sw);
+    const [x2, y2] = pts[pts.length - 1], [x1, y1] = pts[pts.length - 2];
+    const ang = Math.atan2(y2 - y1, x2 - x1), R = 18;
+    const a1 = ang + Math.PI * .8, a2 = ang - Math.PI * .8;
+    const head = M.svg(p, x2 - 26, y2 - 26, 52, 52, `<path d="M${26 + Math.cos(a1) * R} ${26 + Math.sin(a1) * R} L26 26 L${26 + Math.cos(a2) * R} ${26 + Math.sin(a2) * R}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`, { zIndex: 7 });
+    return { path, head };
+  };
+
   /* ================= T101+ : three-scene stories with real transitions (not slides) =================
      Each template = 3 scenes (≈0.45–3.45, 3.45–6.65, 6.65–9.3). Scene changes are transitions (push / zoom / iris / wipe / flip /
      rise / shutter / blur), the whole stage drifts like a camera, and Huige's window re-shapes on every scene change. */
@@ -97,14 +123,15 @@
     blur: (o, i, p) => { o.style.opacity = (1 - p).toFixed(3); o.style.filter = `blur(${(16 * p).toFixed(1)}px)`; i.style.opacity = p.toFixed(3); i.style.filter = `blur(${(16 * (1 - p)).toFixed(1)}px)`; },
     slide: (o, i, p) => { const e = M.io(p); o.style.transform = `translateX(${(W() * .35 * e).toFixed(1)}px) scale(${(1 - .15 * e).toFixed(4)})`; o.style.opacity = (1 - e).toFixed(3); i.style.transform = `translateX(${(-W() * (1 - e)).toFixed(1)}px)`; },
     /* hard cut at the midpoint: no double exposure, no text ghosting */
-    cut: (o, i, p) => { const showNew = p >= .5; o.style.opacity = showNew ? '0' : '1'; i.style.opacity = showNew ? '1' : '0'; o.style.transform = ''; i.style.transform = ''; }
+    cut: (o, i, p) => { o.style.opacity = '0'; i.style.opacity = '1'; o.style.transform = ''; i.style.transform = ''; }
   };
   /* window shapes for the three scenes: c(x,y,d) circle · q(x,y,w,h,r) rounded */
   M.c = (x, y, d, s) => ({ x, y, w: d, h: d, r: d / 2, o: 1, s: s || 1.15 });
   M.q = (x, y, w, h, r, s) => ({ x, y, w, h, r: r ?? 28, o: 1, s: s || 1.15 });
   M.story = o => {
-    const tr = o.tr || ['zoom', 'push'], keys = [], TRD = o.trd || .6;
-    C.storyTr = tr.slice(); C.storyTB = M.TB.map(x => x.slice());
+    const tr = o.tr || ['zoom', 'push'], keys = [];
+    const TRD = tr.includes('cut') ? Math.min(o.trd || .2, .2) : (o.trd || .6);
+    C.storyTr = tr.slice(); C.storyTB = M.TB.map(x => x.slice()); C.storyTrd = TRD;
     if (!o.noface && o.wins) o.wins.slice(1).forEach((L, k) => keys.push({ t: M.TB[k + 1][0] - .28, d: TRD, L }));
     M.setup({ over: o.over, overCover: o.overCover, bg: o.bg, noface: o.noface, win: o.wins ? o.wins[0] : undefined, keys, end: o.end, dur: o.dur, ring: o.ring, port: o.port, captions: M.caps(o.caps),
       build(L) { const s = {}; s.cam = M.box(L, 0, 0, { width: '1920px', height: '1080px', transformOrigin: '50% 50%' });
@@ -112,14 +139,21 @@
         s.sc = o.scenes.map((sc, i) => { const ex = EX(), ey = EY(), c = M.box(s.cam, -ex, -ey, { width: (1920 + 2 * ex) + 'px', height: (1080 + 2 * ey) + 'px', transformOrigin: `${ex + 960}px ${ey + 540}px`, background: (o.sbg || [])[i] || '' });
           const inner = M.box(c, ex, ey, { width: '1920px', height: '1080px' }); c.s = sc[0](inner); c.u = sc[1]; return c; });
         if (o.front) s.front = o.front(s.cam); return s; },
-      update(s, t) { const k = clamp(t / (o.dur || 10));
-        s.cam.style.transform = `scale(${(1.0 + .045 * k).toFixed(4)}) translate(${(-14 * k).toFixed(1)}px, ${(-8 * k).toFixed(1)}px)`;   /* camera push */
+      update(s, t) { const k = clamp(t / (o.dur || 10)), only = C.params.get('scene');
+        s.cam.style.transform = `scale(${(1.0 + .02 * k).toFixed(4)})`;   /* camera push（不超过 2%，否则贴边内容会漂出安全区） */
         if (s.back && o.backU) o.backU(s.back, t);
         s.sc.forEach((c, i) => { const [a, b] = M.TB[i]; c.style.transform = ''; c.style.opacity = ''; c.style.filter = ''; c.style.clipPath = '';
-          const start = i ? a - TRD / 2 : 0, end = i < 2 ? b + TRD / 2 : 99; c.style.display = t >= start && t <= end ? '' : 'none';
+          if (only != null) { const on = i === +only; c.style.display = on ? '' : 'none'; if (on) c.u(c.s, t, a); return; }
+          /* cut 边界不允许两场同时显示：旧场的 z-index 子元素会盖到新场背景上（残影根因） */
+          const last = M.TB.length - 1;
+          const cutPrev = i > 0 && (tr[i - 1] || tr[tr.length - 1]) === 'cut';
+          const cutNext = i < last && (tr[i] || tr[tr.length - 1]) === 'cut';
+          const start = i ? a - (cutPrev ? 0 : TRD / 2) : 0;
+          const end = i < last ? b + (cutNext ? -1e-3 : TRD / 2) : 99;
+          c.style.display = t >= start && t <= end ? '' : 'none';
           if (c.style.display) return; c.u(c.s, t, a);
-          if (i === 2 && !o.noface) c.style.opacity = (1 - M.i2((t - (M.TB[2][1] - .3)) / .3)).toFixed(3); });
-        [0, 1].forEach(j => { const T = M.TB[j + 1][0], p = clamp((t - (T - TRD / 2)) / TRD); if (p >= 0 && p < 1) M.TR[tr[j]](s.sc[j], s.sc[j + 1], p); });
+          if (i === last && !o.noface) c.style.opacity = (1 - M.i2((t - (M.TB[last][1] - .3)) / .3)).toFixed(3); });
+        if (only == null) for (let j = 0; j < M.TB.length - 1; j++) { const T = M.TB[j + 1][0], pr = (t - (T - TRD / 2)) / TRD; if (pr >= 0 && pr < 1) M.TR[tr[j] || tr[tr.length - 1]](s.sc[j], s.sc[j + 1], clamp(pr)); }
         if (s.front && o.frontU) o.frontU(s.front, t); } });
   };
   /* scene decor helpers */

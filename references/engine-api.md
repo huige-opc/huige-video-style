@@ -87,6 +87,7 @@ Each builder creates elements in `build()`; the matching `*At()` animates them i
 | Template | Builders → animators |
 |---|---|
 | HUD (T09–T11) | `hudBg`, `hudFrame(L,label,code)`→`hudFrameAt(f,t)`, `title(L,a,hi,x,y,size,col)`, `kicker(L,txt,x,y,col)`; Huige bracket frame: `ringFn = () => ({ width: 0, color: 'transparent', hud: 'rgba(255,255,255,.55)' })` |
+| Header | `T.head(L,{x,y,size,title,sub,subSize,color})` — one display line + at most one lighter subline; no kicker/title/sub stack |
 | T10 Keynote | `curve`→`curveAt(c,u)`, `odometer(L,text,x,y,size)`→`odometerAt(o,t,t0,d)`, `breaking`, `globe(L,cx,cy,r)`→`globeAt(g,lt,orbitU)`, `orb`, `fileIcon`, `rows(L,x,y,[[icon,name,note]])`, `vs`, `metal(L,txt,y,size)`→`metalAt(m,lt,t0)` |
 | T11 Dashboard | `flow`→`flowAt`, `gauge`→`gaugeAt(g,u,val)`, `timer`→`timerAt`, `quote`, `checks`→`checksAt`, `timeline`, `xStamp`, `grid`→`gridAt`, `bars`→`barsAt`, `toggle`→`toggleAt`, `slider`→`sliderAt`, `lines`→`linesAt`, `terminal`→`terminalAt`, `goldStamp`, `version`→`versionAt` |
 | T08 Neon | `neonGrade(L)` (a layer with z > 50 over full-bleed Huige), `glow`, `pixel(L,txt,cy,size)`, `echo(L,txt,size,n)`, `article`→`articleAt`, `collage(L,srcs,spots)`→`collageAt`, `bubble`→`bubbleAt`, `slots`→`slotsAt`, `tag`→`tagAt` |

@@ -38,6 +38,14 @@
   T.title = (L, a, hi, x, y, size, col, after) => el(L, 'div', 'abs cn', { left: x + 'px', top: y + 'px', fontSize: (size || 46) + 'px', color: '#fff', fontWeight: 900 }, `${a || ''}<span style="color:${col || T.HUD.BLUE}">${hi || ''}</span>${after || ''}`);
   T.kicker = (L, txt, x, y, col) => el(L, 'div', 'abs mono', { left: x + 'px', top: y + 'px', fontSize: '16px', color: col || T.HUD.DIM }, txt);
 
+  /* 统一页眉组件：一个大标题 + 可选一行副题；不再提供 kicker+title+sub 三连 */
+  T.head = (L, o = {}) => {
+    const { x = 110, y = 120, size = 84, title = '', sub, subSize = 30, color = '#fff', subColor = 'rgba(255,255,255,.6)' } = o;
+    const h = el(L, 'div', 'abs cn', { left: x + 'px', top: y + 'px', fontSize: size + 'px', color, fontWeight: 900, lineHeight: 1 }, title);
+    const s = sub ? el(L, 'div', 'abs', { left: (x + 2) + 'px', top: (y + size + 14) + 'px', fontSize: subSize + 'px', color: subColor, fontWeight: 600, lineHeight: 1 }, sub) : null;
+    return { h, s };
+  };
+
   /* ---------- T10 HUD Keynote ---------- */
   /* glowing S-curve with a comet that travels it; u 0..1 */
   T.curve = (L, x, y, w, h, col) => { const s = K.svg(L, w, h, x, y); const d = `M0 ${h} L${w * .32} ${h} C${w * .55} ${h} ${w * .5} 0 ${w * .78} 0 L${w} 0`;
